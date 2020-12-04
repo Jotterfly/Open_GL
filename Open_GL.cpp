@@ -1,55 +1,119 @@
-﻿#include <stdio.h>
+﻿#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <iostream>
+using namespace std;
 
-#define GLM_FORCE_RADIANS
-#define GLM_SWIZZLE
-#include <glm/vec2.hpp>
-#include <glm/matrix.hpp>
-#include <glm/mat2x2.hpp>
-#include <glm/geometric.hpp>
-
-using namespace glm;
-
-float signedArea(const glm::vec2 p[], int n)
+static unsigned int CompileShader( unsigned int type, const string& source)
 {
-	float sum = p[0].x * (p[1].y - p[n - 1].y) +
-		p[n - 1].x * (p[0].y - p[n - 2].y);
+    unsigned int id = glCreateShader(type);
+    const char* src =  source.c_str();
+    glShaderSource(id, 1, &src, nullptr);
+    glCompileShader(id);
+    
+    int result;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+    if (result == GL_FALSE)
+    {
+        int length;
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
 
-	for (int i = 1; i < n - 1; i++)
-		sum += p[i].x * (p[i + 1].y - p[i - 1].y);
+        char* message = (char*)alloca(length * sizeof(char));
+        glGetShaderInfoLog(id, length, &length, message);
+        cout << "Failed to compile" << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader!" << endl;
+        cout << message << endl;
+        glDeleteShader(id);
+        return 0;;
+    }
+    return id;
 
-	return 0.5f * sum;
 }
-
-int main(int argc, char* argv[])
+static int CreateShader(const string& vertexShader, const string& fragmentShader)
 {
-	glm::vec2 a(1.0f);
-	glm::vec2 b = a + 1.0f;
-	glm::vec2 c(2.0f, -1.0f);
-	glm::vec2 d = a + 2.0f * c;
-	glm::vec2 e = -d;
-	glm::vec2 f = glm::normalize(e);
-	glm::vec2 a2(a.xy);
-	glm::vec2 b2(a.xy());
+    unsigned int program = glCreateProgram();
+    unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
+    unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    glValidateProgram(program);
 
-	float dot2 = glm::dot(glm::vec2(1), d);
-	float len = glm::length(e);
-	float dist = glm::distance(b, c);
-	bool  res = glm::all(glm::equal(a2, b2));
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    return program;
+}
+int main(void)
+{
+    GLFWwindow* window;
 
-	glm::mat2 m(0, 1, 2, 3);
-	glm::mat2 n = matrixCompMult(m, m);
-	glm::mat2 t = transpose(m);
-	glm::mat2 mi = inverse(m);
+    /* Initialize the library */
+    if (!glfwInit())
+        return -1;
 
-	glm::vec2 u = mi * c + a;
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    if (!window)
+    {
+        glfwTerminate();
+        return -1;
+    }
 
-	glm::vec2 p[3];
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
 
-	p[0] = glm::vec2(0, 0);
-	p[1] = glm::vec2(1, 0);
-	p[2] = glm::vec2(0, 1);
+    if (glewInit() != GLEW_OK)
+        cout << "glewInit error" << endl;
+    //Создаем буфер
+    float positions[6] = {
+        -0.5f, -0.5f,
+         0.0f,  0.5f,
+         0.5f, -0.5f
+    };
 
-	printf("%f\n", signedArea(p, 3));
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), positions, GL_STATIC_DRAW);
 
-	return 0;
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+    string vertexShader =
+        "#version 330 core\n"
+        "\n"
+        "layout(location = 0) in vec4 position;\n"
+        "\n"
+        "void main()\n"
+        "{\n"
+        " gl_Position = position;\n"
+        "}\n";
+    string fragmentShader =
+        "#version 330 core\n"
+        "\n"
+        "layout(location = 0) out vec4 color;\n"
+        "\n"
+        "void main()\n"
+        "{\n"
+        " color = vec4(1.0, 1.0, 0.0, 1.0);\n"
+        "}\n";
+    unsigned int shader = CreateShader(vertexShader, fragmentShader);
+    glUseProgram(shader);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window))
+    {
+        /* Render here */
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+
+        /* Poll for and process events */
+        glfwPollEvents();
+    }
+
+    glfwTerminate();
+    return 0;
 }
