@@ -12,10 +12,14 @@ enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
+<<<<<<< HEAD
     RIGHT,
     E,
     Q,
     R
+=======
+    RIGHT
+>>>>>>> dafaac6eee0a02bd0834e5eff734eae1b809bb29
 };
 
 // Default camera values
@@ -26,7 +30,10 @@ const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
 
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> dafaac6eee0a02bd0834e5eff734eae1b809bb29
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
@@ -82,6 +89,7 @@ public:
             Position -= Right * velocity;
         if (direction == RIGHT)
             Position += Right * velocity;
+<<<<<<< HEAD
         if (direction == R){}
            
         if (direction == E) {
@@ -92,6 +100,8 @@ public:
             if (MovementSpeed/(1.25) >= SPEED)
                 MovementSpeed /= 1.25;
         }
+=======
+>>>>>>> dafaac6eee0a02bd0834e5eff734eae1b809bb29
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
