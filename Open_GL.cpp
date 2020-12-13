@@ -59,7 +59,6 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
- /*   glfwSetScrollCallback(window, scroll_callback);*/
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     unsigned int loadTexture(const char* path);
     unsigned int loadCubemap(std::vector<std::string> faces);
