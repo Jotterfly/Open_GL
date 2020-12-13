@@ -83,7 +83,8 @@ public:
         if (direction == RIGHT)
             Position += Right * velocity;
 
-        if (direction == R){}
+        if (direction == R){
+        }
            
         if (direction == E) {
             if(MovementSpeed < 20.0f)
